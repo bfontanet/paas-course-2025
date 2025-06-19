@@ -22,21 +22,20 @@ if (isset($_GET['delete'])) {
     }
 }
 
-// Subida de archivo ZIP
-if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_FILES["zipfile"])) {
-    $uploadedFile = $_FILES["zipfile"];
-    if ($uploadedFile["type"] !== "application/zip") {
-        echo "<p style='color:red;'>Solo se permiten archivos ZIP.</p>";
-    } else {
-        $blobName = basename($uploadedFile["name"]);
-        $content = fopen($uploadedFile["tmp_name"], "r");
+$uploadedFile = $_FILES["zipfile"];
+$blobName = basename($uploadedFile["name"]);
+$extension = strtolower(pathinfo($blobName, PATHINFO_EXTENSION));
 
-        try {
-            $blobClient->createBlockBlob($containerName, $blobName, $content);
-            echo "<p style='color:green;'>Archivo $blobName subido correctamente.</p>";
-        } catch (ServiceException $e) {
-            echo "<p style='color:red;'>Error al subir: " . $e->getMessage() . "</p>";
-        }
+if ($extension !== "zip") {
+    echo "<p style='color:red;'>Solo se permiten archivos ZIP.</p>";
+} else {
+    $content = fopen($uploadedFile["tmp_name"], "r");
+
+    try {
+        $blobClient->createBlockBlob($containerName, $blobName, $content);
+        echo "<p style='color:green;'>Archivo $blobName subido correctamente.</p>";
+    } catch (ServiceException $e) {
+        echo "<p style='color:red;'>Error al subir: " . $e->getMessage() . "</p>";
     }
 }
 
