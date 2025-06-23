@@ -130,7 +130,7 @@ if (php_sapi_name() === 'cli') {
 </head>
 <body>
     <div class="container">
-        <h1>🧘 Archivos descomprimidos en Azure</h1>
+        <h1>Archivos descomprimidos en Azure</h1>
         <?php foreach ($mensajes as $m): ?>
             <div class="message <?= $m['tipo'] ?>">
                 <?= $m['texto'] ?>
