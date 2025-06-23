@@ -11,31 +11,39 @@ $containerName = "comprimidos";  // Cambia esto por el nombre de tu contenedor
 
 $blobClient = BlobRestProxy::createBlobService($connectionString);
 
-// Eliminar archivo si se solicita
+$message = "";
+$messageClass = "";
+
 if (isset($_GET['delete'])) {
     $blobToDelete = $_GET['delete'];
     try {
         $blobClient->deleteBlob($containerName, $blobToDelete);
-        echo "<p style='color:green;'>Archivo $blobToDelete eliminado correctamente.</p>";
+        $message = "Archivo <strong>$blobToDelete</strong> eliminado correctamente.";
+        $messageClass = "success";
     } catch (ServiceException $e) {
-        echo "<p style='color:red;'>Error al eliminar: " . $e->getMessage() . "</p>";
+        $message = "Error al eliminar: " . $e->getMessage();
+        $messageClass = "error";
     }
 }
 
-$uploadedFile = $_FILES["zipfile"];
-$blobName = basename($uploadedFile["name"]);
-$extension = strtolower(pathinfo($blobName, PATHINFO_EXTENSION));
+if (!empty($_FILES["zipfile"]["tmp_name"])) {
+    $uploadedFile = $_FILES["zipfile"];
+    $blobName = basename($uploadedFile["name"]);
+    $extension = strtolower(pathinfo($blobName, PATHINFO_EXTENSION));
 
-if ($extension !== "zip") {
-    echo "<p style='color:red;'>Solo se permiten archivos ZIP.</p>";
-} else {
-    $content = fopen($uploadedFile["tmp_name"], "r");
-
-    try {
-        $blobClient->createBlockBlob($containerName, $blobName, $content);
-        echo "<p style='color:green;'>Archivo $blobName subido correctamente.</p>";
-    } catch (ServiceException $e) {
-        echo "<p style='color:red;'>Error al subir: " . $e->getMessage() . "</p>";
+    if ($extension !== "zip") {
+        $message = "Solo se permiten archivos ZIP.";
+        $messageClass = "error";
+    } else {
+        $content = fopen($uploadedFile["tmp_name"], "r");
+        try {
+            $blobClient->createBlockBlob($containerName, $blobName, $content);
+            $message = "Archivo <strong>$blobName</strong> subido correctamente.";
+            $messageClass = "success";
+        } catch (ServiceException $e) {
+            $message = "Error al subir: " . $e->getMessage();
+            $messageClass = "error";
+        }
     }
 }
 
@@ -50,12 +58,87 @@ try {
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Gestor de archivos ZIP en Azure Blob</title>
+    <meta charset="UTF-8">
+    <title>Gestor Zen de archivos ZIP</title>
+    <style>
+        body {
+            font-family: "Segoe UI", sans-serif;
+            background: #f6f8f9;
+            color: #333;
+            margin: 0;
+            padding: 2rem;
+        }
+        h1, h2 {
+            color: #2f5d62;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .message {
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+        .success {
+            background: #daf5d7;
+            color: #256029;
+        }
+        .error {
+            background: #ffe2e2;
+            color: #990000;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid #ddd;
+        }
+        a {
+            text-decoration: none;
+            color: #0077aa;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        form {
+            margin-top: 2rem;
+        }
+        input[type="file"] {
+            padding: 0.5rem;
+        }
+        button {
+            margin-top: 1rem;
+            padding: 0.6rem 1.2rem;
+            background-color: #2f5d62;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #224b4f;
+        }
+    </style>
 </head>
 <body>
-    <h1>Archivos ZIP en el contenedor '<?= htmlspecialchars($containerName) ?>'</h1>
+<div class="container">
+    <h1>Gestor de archivos ZIP en Azure Blob</h1>
+    <?php if ($message): ?>
+        <div class="message <?= htmlspecialchars($messageClass) ?>">
+            <?= $message ?>
+        </div>
+    <?php endif; ?>
+
+    <h2>Contenedor: <em><?= htmlspecialchars($containerName) ?></em></h2>
     <ul>
         <?php foreach ($blobs as $blob): ?>
             <li>
@@ -70,7 +153,9 @@ try {
     <h2>Subir nuevo archivo ZIP</h2>
     <form method="POST" enctype="multipart/form-data">
         <input type="file" name="zipfile" accept=".zip" required>
+        <br>
         <button type="submit">Subir</button>
     </form>
+</div>
 </body>
 </html>
