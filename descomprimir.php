@@ -32,7 +32,7 @@ try {
         $blobName = $blob->getName();
         if (strtolower(pathinfo($blobName, PATHINFO_EXTENSION)) !== "zip") continue;
 
-        out("📦 Procesando ZIP: <strong>$blobName</strong>");
+        out("Procesando ZIP: <strong>$blobName</strong>");
 
         $zipStream = $blobClient->getBlob($sourceContainer, $blobName)->getContentStream();
         $tmpZipPath = tempnam(sys_get_temp_dir(), 'zip_');
@@ -53,7 +53,7 @@ try {
             if ($content !== false) {
                 $uploadOptions = new CreateBlockBlobOptions();
                 $blobClient->createBlockBlob($targetContainer, $entrySanitized, $content, $uploadOptions);
-                out("✅ Extraído y subido: <em>$entrySanitized</em>");
+                out("Extraído y subido: <em>$entrySanitized</em>");
             } else {
                 out("⚠️ No se pudo leer el contenido de: $entry", false);
             }
