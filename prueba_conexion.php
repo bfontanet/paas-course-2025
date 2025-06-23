@@ -54,13 +54,13 @@ $options = [
 </head>
 <body>
     <div class="container">
-        <h1>🧘 Conexión a la base de datos</h1>
+        <h1>Conexión a la base de datos</h1>
         <?php
         try {
             $pdo = new PDO($dsn, $dbUser, $dbPass, $options);
             $stmt = $pdo->query('SELECT NOW() AS fecha_actual;');
             $fila = $stmt->fetch();
-            echo "<p class='success'>✅ Conectado correctamente.<br>🕒 Hora del servidor: <strong>" . htmlspecialchars($fila['fecha_actual']) . "</strong></p>";
+            echo "<p class='success'>Conectado correctamente.<br>🕒 Hora del servidor: <strong>" . htmlspecialchars($fila['fecha_actual']) . "</strong></p>";
         } catch (PDOException $e) {
             error_log("Error de conexión: " . $e->getMessage());
             echo "<p class='error'>❌ Error al conectar con la base de datos:<br>" . htmlspecialchars($e->getMessage()) . "</p>";
